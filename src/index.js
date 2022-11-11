@@ -5,7 +5,7 @@ import Notiflix from 'notiflix';
 import fetchSubjects from './fetchSubjects.js'
 import './scroll-top-button.js'
 
-getEl = selector => document.querySelector(selector)
+let getEl = selector => document.querySelector(selector)
 getEl('.search-form').addEventListener('submit', onFormSubmit)
 // getEl('.load-more').addEventListener('click', onLoadMoreBtnClick)
 

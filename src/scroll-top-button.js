@@ -1,7 +1,7 @@
 /*
 scroll-top-button
 */
-getEl = selector => document.querySelector(selector)
+let getEl = selector => document.querySelector(selector)
 getEl('.js-button-scroll-top').addEventListener('click', onScrollBtnClick)
 
   window.onscroll = () => {
