@@ -133,8 +133,7 @@ const onEntry = (entries) => {
         if(entry.isIntersecting && searchSubject!=='') {
             
           fetchSubjects(searchSubject, pageCount).then(data => {
-          console.log('pageCount в начале onEntry', pageCount)
-
+          
           renderMarkup(data) 
 
           lightbox = new SimpleLightbox('.gallery a', {
@@ -152,11 +151,8 @@ const onEntry = (entries) => {
                 Notiflix.Notify.warning("We're sorry, but you've reached the end of search results.");
                 observer.unobserve(target);
                 return
-    } 
-    
-            pageCount += 1
-            
-            console.log('pageCount в конце onEntry', pageCount)
+    }     
+            pageCount += 1                    
         
   }).catch(console.log)  
 } 
