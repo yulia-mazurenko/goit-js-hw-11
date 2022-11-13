@@ -1,78 +1,43 @@
-// import Notiflix from 'notiflix';
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
 import Notiflix from 'notiflix';
-import fetchSubjects from './fetchSubjects.js'
+import fetchPictures from './fetchPictures.js'
 import './scroll-top-button.js'
 
 let getEl = selector => document.querySelector(selector)
 getEl('.search-form').addEventListener('submit', onFormSubmit)
-// getEl('.load-more').addEventListener('click', onLoadMoreBtnClick)
-
 
 let searchSubject=''
 let pageCount = 1;
 let lightbox;
 
-function onFormSubmit(evt) {
+async function onFormSubmit(evt) {
   clearMarkup()
   
   evt.preventDefault();
+ 
   pageCount=1  
   searchSubject = evt.currentTarget.elements.searchQuery.value;
-if (searchSubject!=='') {
-   fetchSubjects(searchSubject, pageCount).then(data => {
-   renderMarkup(data)
-   lightbox = new SimpleLightbox('.gallery a', {
-    
-     captionsData: "author",
-    captionDelay: 250,
-   })
-     lightbox.refresh()
+  if (searchSubject !== '') {
 
-    //  makeSmoothScrolling()
-     pageCount += 1
-     if (data.totalHits !== 0) {
-       Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`)
-     }
-    
-    //  getEl('.load-more').classList.remove('is-hidden')
-        
-   }).catch(console.log)  
-}
-    
-}
-
-// function onLoadMoreBtnClick() {
+   try {
   
-//   searchSubject = getEl('.search-form input').value
-    
-//   getEl('.load-more').classList.add('is-hidden')
+  const data = await fetchPictures(searchSubject, pageCount)
+           
+     renderMarkup(data)
+     
+     makeLightbox()
+                 //  makeSmoothScrolling()
+          pageCount += 1
+      if (data.totalHits !== 0) {
+          Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`)
+      }              
   
-//   fetchSubjects(searchSubject, pageCount).then(data => {
-
-//     renderMarkup(data) 
-
-//     lightbox = new SimpleLightbox('.gallery a', {
-    
-//      captionsData: "alt",
-//     captionDelay: 250,
-//     })
-//     lightbox.refresh()
-
-//     makeSmoothScrolling()
-      
-//     if ((pageCount > data.totalHits / 40) || data.hits.length < 40) {
-//       Notiflix.Notify.warning("We're sorry, but you've reached the end of search results.");
-//       getEl('.load-more').classList.add('is-hidden')
-//       return
-//     } 
-    
-//     pageCount += 1
-//     getEl('.load-more').classList.remove('is-hidden')    
-    
-//   }).catch(console.log)  
-// }
+} catch (error) {
+  console.log(error)
+}   
+}    
+}
 
 function renderMarkup(data) {
   
@@ -110,40 +75,42 @@ function clearMarkup() {
   getEl('.gallery').innerHTML = '';
 }
 
-function makeSmoothScrolling() {
-
-  const { height: cardHeight } = document
-  .querySelector(".gallery")
-    .firstElementChild.getBoundingClientRect();
-  
-  setTimeout(() => {
-    window.scrollBy({
-  top: cardHeight * 2,
-  behavior: "smooth",
-});
-  }, 1000);
-
-
+function makeLightbox() {
+ lightbox = new SimpleLightbox('.gallery a', {
+          captionsData: "author",
+          captionDelay: 250,
+        })
+        lightbox.refresh()
 }
 
-const onEntry = (entries) => {
+// function makeSmoothScrolling() {
+
+//   const { height: cardHeight } = document.querySelector(".gallery")
+//     .firstElementChild.getBoundingClientRect();
+  
+//   setTimeout(() => {
+//     window.scrollBy({
+//   top: cardHeight * 0.5,
+//   behavior: "smooth",
+// });
+//   }, 1000);
+
+
+// }
+
+const onEntry =  (entries) => {
   searchSubject = getEl('.search-form input').value
-  entries.forEach((entry) => {
+try {
+   entries.forEach(async(entry) => {
       
         if(entry.isIntersecting && searchSubject!=='') {
             
-          fetchSubjects(searchSubject, pageCount).then(data => {
-          
+          const data = await fetchPictures(searchSubject, pageCount)
+          if (data.hits.length === 0) {
+            return
+          }
           renderMarkup(data) 
-
-          lightbox = new SimpleLightbox('.gallery a', {
-          
-          captionsData: "author",
-          captionDelay: 250,
-          })
-  
-         lightbox.refresh()
-
+          makeLightbox()
     // makeSmoothScrolling()
       
             if ((pageCount > data.totalHits / 40) || data.hits.length < 40) {
@@ -154,10 +121,15 @@ const onEntry = (entries) => {
     }     
             pageCount += 1                    
         
-  }).catch(console.log)  
-} 
+  } 
 })    
+} catch (error) {
+  console.log(error)
 }
+ 
+}
+
+
 
 /*
 infinite-scroll
@@ -169,7 +141,8 @@ const options = {
 }
 
 const observer = new IntersectionObserver(onEntry, options);
-const target = document.querySelector('.sentinel')
+const target = document.querySelector(".sentinel")
+    
 
 observer.observe(target);
 
